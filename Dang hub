@@ -137,3 +137,28 @@ PlayerTab:CreateSlider({
         game.Players.LocalPlayer.Character.Humanoid.JumpPower = jpValue
     end
 })
+-- Toggle: Gom Pet Lại Một Chỗ
+local gatherPets = false
+
+MainTab:CreateToggle({
+    Name = "Gom Pet Lại 1 Chỗ",
+    CurrentValue = false,
+    Flag = "GatherPets",
+    Callback = function(v)
+        gatherPets = v
+        while gatherPets do
+            local plr = game.Players.LocalPlayer
+            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+            if root and workspace:FindFirstChild("Pets") then
+                for _, pet in pairs(workspace.Pets:GetChildren()) do
+                    if pet:IsDescendantOf(workspace.Pets) and pet:FindFirstChild("PrimaryPart") then
+                        pet:SetPrimaryPartCFrame(root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3)))
+                    elseif pet.PrimaryPart then
+                        pet:SetPrimaryPartCFrame(root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3)))
+                    end
+                end
+            end
+            wait(0.5)
+        end
+    end
+})
