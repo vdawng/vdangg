@@ -162,3 +162,37 @@ MainTab:CreateToggle({
         end
     end
 })
+local gatherPets = false
+local petFolders = {
+    workspace:FindFirstChild("Pets"),
+    workspace:FindFirstChild("PlayerPets"),
+    workspace:FindFirstChild(game.Players.LocalPlayer.Name)
+}
+
+MainTab:CreateToggle({
+    Name = "Gom Pet Lại 1 Chỗ",
+    CurrentValue = false,
+    Callback = function(v)
+        gatherPets = v
+        while gatherPets do
+            local plr = game.Players.LocalPlayer
+            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+
+            if root then
+                for _, folder in ipairs(petFolders) do
+                    if folder then
+                        for _, pet in pairs(folder:GetChildren()) do
+                            local part = pet.PrimaryPart or pet:FindFirstChild("HumanoidRootPart") or pet:FindFirstChild("Head")
+                            if part then
+                                part.CFrame = root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3))
+                            end
+                        end
+                    end
+                end
+            end
+
+            wait(0.3)
+        end
+    end
+})
+
