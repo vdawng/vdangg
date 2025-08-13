@@ -1,198 +1,51 @@
--- Grow a Garden | X Hub Style (Full Version)
--- Tác giả: vdang - For learning purposes only
+-- GrowHub - Grow a Garden
+repeat task.wait() until game:IsLoaded()
 
--- Load UI Library
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Kiểm tra đúng game
+local GAME_ID = 7436755782 -- Grow a Garden
+if game.GameId ~= GAME_ID then
+    warn("GrowHub: Bạn không ở trong game Grow a Garden!")
+    return
+end
 
--- Window
-local Window = Rayfield:CreateWindow({
-    Name = "Grow a Garden | X Hub",
-    LoadingTitle = "Grow a Garden Hub",
-    LoadingSubtitle = "by vdang",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "GAG_XHub",
-        FileName = "Config"
-    },
-    Discord = {
-        Enabled = false
-    },
-    KeySystem = false
+-- Hiển thị thông báo
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "GrowHub Loaded!",
+    Text = "Grow a Garden Script đã được tải!",
+    Icon = "rbxassetid://99764942615873",
+    Duration = 5
 })
 
--- Variables
+-- ====== Chức năng chính ======
+-- Ví dụ Auto Farm cơ bản
 local autoFarm = false
-local autoBuy = false
-local wsValue = 16
-local jpValue = 50
 
--- Main Tab
-local MainTab = Window:CreateTab("Main", 4483362458)
-
-MainTab:CreateToggle({
-    Name = "Auto Farm",
-    CurrentValue = false,
-    Flag = "AutoFarm",
-    Callback = function(v)
-        autoFarm = v
-        while autoFarm do
-            local plr = game.Players.LocalPlayer
-            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
-
+local function startAutoFarm()
+    autoFarm = true
+    while autoFarm do
+        pcall(function()
+            local player = game.Players.LocalPlayer
+            local char = player.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
             if root then
-                -- Tìm plot gần nhất
-                local plots = workspace:FindFirstChild("Plots")
-                local nearestPlot
-                local minDist = math.huge
-
-                if plots then
-                    for _, plot in pairs(plots:GetChildren()) do
-                        if plot:FindFirstChild("Soil") then
-                            local dist = (plot.Position - root.Position).Magnitude
-                            if dist < minDist then
-                                minDist = dist
-                                nearestPlot = plot
-                            end
-                        end
-                    end
-                end
-
-                -- Teleport và thu hoạch
-                if nearestPlot then
-                    root.CFrame = nearestPlot.CFrame + Vector3.new(0, 3, 0)
-                    wait(0.3)
-                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "E", false, game)
-                    wait(0.2)
-                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "E", false, game)
-                end
-
-                -- Teleport chỗ bán
-                local sell = workspace:FindFirstChild("SellArea") or workspace:FindFirstChild("Market")
-                if sell then
-                    root.CFrame = sell.CFrame + Vector3.new(0, 3, 0)
-                    wait(0.5)
-                end
-            end
-            wait(0.5)
-        end
-    end
-})
-
-MainTab:CreateToggle({
-    Name = "Auto Buy Seeds",
-    CurrentValue = false,
-    Flag = "AutoBuy",
-    Callback = function(v)
-        autoBuy = v
-        while autoBuy do
-            local seedShop = workspace:FindFirstChild("SeedShop")
-            if seedShop then
-                fireproximityprompt(seedShop:FindFirstChildOfClass("ProximityPrompt"))
-            end
-            wait(2)
-        end
-    end
-})
-
--- Teleport Tab
-local TeleportTab = Window:CreateTab("Teleports", 4483362458)
-TeleportTab:CreateButton({
-    Name = "Teleport to Garden",
-    Callback = function()
-        local plot = workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChildWhichIsA("BasePart")
-        if plot then
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = plot.CFrame + Vector3.new(0, 3, 0)
-        end
-    end
-})
-TeleportTab:CreateButton({
-    Name = "Teleport to Sell Area",
-    Callback = function()
-        local sell = workspace:FindFirstChild("SellArea") or workspace:FindFirstChild("Market")
-        if sell then
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = sell.CFrame + Vector3.new(0, 3, 0)
-        end
-    end
-})
-
--- Player Tab
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-PlayerTab:CreateSlider({
-    Name = "WalkSpeed",
-    Range = {16, 100},
-    Increment = 1,
-    CurrentValue = 16,
-    Callback = function(v)
-        wsValue = v
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = wsValue
-    end
-})
-PlayerTab:CreateSlider({
-    Name = "JumpPower",
-    Range = {50, 200},
-    Increment = 5,
-    CurrentValue = 50,
-    Callback = function(v)
-        jpValue = v
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = jpValue
-    end
-})
--- Toggle: Gom Pet Lại Một Chỗ
-local gatherPets = false
-
-MainTab:CreateToggle({
-    Name = "Gom Pet Lại 1 Chỗ",
-    CurrentValue = false,
-    Flag = "GatherPets",
-    Callback = function(v)
-        gatherPets = v
-        while gatherPets do
-            local plr = game.Players.LocalPlayer
-            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
-            if root and workspace:FindFirstChild("Pets") then
-                for _, pet in pairs(workspace.Pets:GetChildren()) do
-                    if pet:IsDescendantOf(workspace.Pets) and pet:FindFirstChild("PrimaryPart") then
-                        pet:SetPrimaryPartCFrame(root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3)))
-                    elseif pet.PrimaryPart then
-                        pet:SetPrimaryPartCFrame(root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3)))
+                -- Ví dụ: Farm bằng cách nhặt tất cả vật phẩm có thể
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("ProximityPrompt") then
+                        fireproximityprompt(obj)
                     end
                 end
             end
-            wait(0.5)
-        end
+        end)
+        task.wait(0.5)
     end
-})
-local gatherPets = false
-local petFolders = {
-    workspace:FindFirstChild("Pets"),
-    workspace:FindFirstChild("PlayerPets"),
-    workspace:FindFirstChild(game.Players.LocalPlayer.Name)
-}
+end
 
-MainTab:CreateToggle({
-    Name = "Gom Pet Lại 1 Chỗ",
-    CurrentValue = false,
-    Callback = function(v)
-        gatherPets = v
-        while gatherPets do
-            local plr = game.Players.LocalPlayer
-            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+local function stopAutoFarm()
+    autoFarm = false
+end
 
-            if root then
-                for _, folder in ipairs(petFolders) do
-                    if folder then
-                        for _, pet in pairs(folder:GetChildren()) do
-                            local part = pet.PrimaryPart or pet:FindFirstChild("HumanoidRootPart") or pet:FindFirstChild("Head")
-                            if part then
-                                part.CFrame = root.CFrame + Vector3.new(math.random(-3,3), 2, math.random(-3,3))
-                            end
-                        end
-                    end
-                end
-            end
+-- Bật AutoFarm ngay khi load
+startAutoFarm()
 
-            wait(0.3)
-        end
-    end
-})
-
+-- Khi thoát game, dừng auto farm
+game:BindToClose(stopAutoFarm)
