@@ -1,0 +1,139 @@
+-- Grow a Garden | X Hub Style (Full Version)
+-- Tác giả: vdang - For learning purposes only
+
+-- Load UI Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- Window
+local Window = Rayfield:CreateWindow({
+    Name = "Grow a Garden | X Hub",
+    LoadingTitle = "Grow a Garden Hub",
+    LoadingSubtitle = "by vdang",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "GAG_XHub",
+        FileName = "Config"
+    },
+    Discord = {
+        Enabled = false
+    },
+    KeySystem = false
+})
+
+-- Variables
+local autoFarm = false
+local autoBuy = false
+local wsValue = 16
+local jpValue = 50
+
+-- Main Tab
+local MainTab = Window:CreateTab("Main", 4483362458)
+
+MainTab:CreateToggle({
+    Name = "Auto Farm",
+    CurrentValue = false,
+    Flag = "AutoFarm",
+    Callback = function(v)
+        autoFarm = v
+        while autoFarm do
+            local plr = game.Players.LocalPlayer
+            local root = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+
+            if root then
+                -- Tìm plot gần nhất
+                local plots = workspace:FindFirstChild("Plots")
+                local nearestPlot
+                local minDist = math.huge
+
+                if plots then
+                    for _, plot in pairs(plots:GetChildren()) do
+                        if plot:FindFirstChild("Soil") then
+                            local dist = (plot.Position - root.Position).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                nearestPlot = plot
+                            end
+                        end
+                    end
+                end
+
+                -- Teleport và thu hoạch
+                if nearestPlot then
+                    root.CFrame = nearestPlot.CFrame + Vector3.new(0, 3, 0)
+                    wait(0.3)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "E", false, game)
+                    wait(0.2)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(false, "E", false, game)
+                end
+
+                -- Teleport chỗ bán
+                local sell = workspace:FindFirstChild("SellArea") or workspace:FindFirstChild("Market")
+                if sell then
+                    root.CFrame = sell.CFrame + Vector3.new(0, 3, 0)
+                    wait(0.5)
+                end
+            end
+            wait(0.5)
+        end
+    end
+})
+
+MainTab:CreateToggle({
+    Name = "Auto Buy Seeds",
+    CurrentValue = false,
+    Flag = "AutoBuy",
+    Callback = function(v)
+        autoBuy = v
+        while autoBuy do
+            local seedShop = workspace:FindFirstChild("SeedShop")
+            if seedShop then
+                fireproximityprompt(seedShop:FindFirstChildOfClass("ProximityPrompt"))
+            end
+            wait(2)
+        end
+    end
+})
+
+-- Teleport Tab
+local TeleportTab = Window:CreateTab("Teleports", 4483362458)
+TeleportTab:CreateButton({
+    Name = "Teleport to Garden",
+    Callback = function()
+        local plot = workspace:FindFirstChild("Plots") and workspace.Plots:FindFirstChildWhichIsA("BasePart")
+        if plot then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = plot.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+})
+TeleportTab:CreateButton({
+    Name = "Teleport to Sell Area",
+    Callback = function()
+        local sell = workspace:FindFirstChild("SellArea") or workspace:FindFirstChild("Market")
+        if sell then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = sell.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+})
+
+-- Player Tab
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+PlayerTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 100},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(v)
+        wsValue = v
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = wsValue
+    end
+})
+PlayerTab:CreateSlider({
+    Name = "JumpPower",
+    Range = {50, 200},
+    Increment = 5,
+    CurrentValue = 50,
+    Callback = function(v)
+        jpValue = v
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = jpValue
+    end
+})
